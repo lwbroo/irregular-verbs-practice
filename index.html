@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> 蔣蔣四小小 不規則動詞三態練習</title>
+  <title>不規則動詞三態練習</title>
   <style>
     body { font-family: Arial, sans-serif; background-color: #f0f8ff; padding: 20px; }
     h1, h2 { text-align: center; color: #333; }
     #quiz, #resultBoard { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    #info { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    #info div { font-size: 18px; }
+    #questionNum { font-size: 18px; margin-bottom: 10px; }
     .verb-row { margin-bottom: 15px; }
     .verb-row label { display: block; margin-bottom: 5px; }
     .verb-row input { width: calc(50% - 10px); padding: 8px; margin-right: 5px; border: 1px solid #ccc; border-radius: 4px; }
     button { display: inline-block; padding: 10px 20px; background: #007acc; color: #fff; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 10px; }
     #result { text-align: center; margin-top: 15px; font-weight: bold; }
-    #timer, #scoreDisplay { font-size: 18px; margin-bottom: 10px; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background: #007acc; color: #fff; }
@@ -25,6 +27,7 @@
     <div id="info">
       <div id="timer">計時: <span>0</span> 秒</div>
       <div id="scoreDisplay">得分: <span>0</span> / 20</div>
+      <div id="questionNum">題目: <span id="questionNumber">1</span>/20</div>
     </div>
     <div class="verb-row">
       <label id="baseForm">Base form: <span></span></label>
@@ -55,7 +58,56 @@
   <script>
     const verbs = [
       { base: 'be', past: 'was/were', participle: 'been' },
-      /* ... 其他動詞 ... */
+      { base: 'become', past: 'became', participle: 'become' },
+      { base: 'begin', past: 'began', participle: 'begun' },
+      { base: 'break', past: 'broke', participle: 'broken' },
+      { base: 'bring', past: 'brought', participle: 'brought' },
+      { base: 'buy', past: 'bought', participle: 'bought' },
+      { base: 'catch', past: 'caught', participle: 'caught' },
+      { base: 'choose', past: 'chose', participle: 'chosen' },
+      { base: 'come', past: 'came', participle: 'come' },
+      { base: 'cut', past: 'cut', participle: 'cut' },
+      { base: 'do', past: 'did', participle: 'done' },
+      { base: 'draw', past: 'drew', participle: 'drawn' },
+      { base: 'drink', past: 'drank', participle: 'drunk' },
+      { base: 'drive', past: 'drove', participle: 'driven' },
+      { base: 'eat', past: 'ate', participle: 'eaten' },
+      { base: 'fall', past: 'fell', participle: 'fallen' },
+      { base: 'feel', past: 'felt', participle: 'felt' },
+      { base: 'find', past: 'found', participle: 'found' },
+      { base: 'fly', past: 'flew', participle: 'flown' },
+      { base: 'forget', past: 'forgot', participle: 'forgotten' },
+      { base: 'get', past: 'got', participle: 'gotten/got' },
+      { base: 'give', past: 'gave', participle: 'given' },
+      { base: 'go', past: 'went', participle: 'gone' },
+      { base: 'have', past: 'had', participle: 'had' },
+      { base: 'hear', past: 'heard', participle: 'heard' },
+      { base: 'hold', past: 'held', participle: 'held' },
+      { base: 'keep', past: 'kept', participle: 'kept' },
+      { base: 'know', past: 'knew', participle: 'known' },
+      { base: 'leave', past: 'left', participle: 'left' },
+      { base: 'lose', past: 'lost', participle: 'lost' },
+      { base: 'make', past: 'made', participle: 'made' },
+      { base: 'meet', past: 'met', participle: 'met' },
+      { base: 'pay', past: 'paid', participle: 'paid' },
+      { base: 'put', past: 'put', participle: 'put' },
+      { base: 'read', past: 'read', participle: 'read' },
+      { base: 'ride', past: 'rode', participle: 'ridden' },
+      { base: 'run', past: 'ran', participle: 'run' },
+      { base: 'say', past: 'said', participle: 'said' },
+      { base: 'see', past: 'saw', participle: 'seen' },
+      { base: 'sell', past: 'sold', participle: 'sold' },
+      { base: 'send', past: 'sent', participle: 'sent' },
+      { base: 'sing', past: 'sang', participle: 'sung' },
+      { base: 'sit', past: 'sat', participle: 'sat' },
+      { base: 'sleep', past: 'slept', participle: 'slept' },
+      { base: 'speak', past: 'spoke', participle: 'spoken' },
+      { base: 'stand', past: 'stood', participle: 'stood' },
+      { base: 'swim', past: 'swam', participle: 'swum' },
+      { base: 'take', past: 'took', participle: 'taken' },
+      { base: 'teach', past: 'taught', participle: 'taught' },
+      { base: 'tell', past: 'told', participle: 'told' },
+      { base: 'think', past: 'thought', participle: 'thought' },
       { base: 'write', past: 'wrote', participle: 'written' }
     ];
     const levels = [
@@ -72,6 +124,7 @@
     ];
 
     let current, questionCount = 0, score = 0, startTime;
+    const questionNumberSpan = document.getElementById('questionNumber');
     const baseLabel = document.querySelector('#baseForm span');
     const pastInput = document.getElementById('pastSimple');
     const partInput = document.getElementById('pastParticiple');
@@ -100,6 +153,7 @@
 
     function nextQuestion() {
       if (questionCount >= 20) return finishQuiz();
+      questionNumberSpan.textContent = questionCount + 1;
       pastInput.value = ''; partInput.value = '';
       resultDiv.textContent = '';
       current = verbs[Math.floor(Math.random() * verbs.length)];
@@ -129,7 +183,6 @@
       finalScoreSpan.textContent = score;
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       finalTimeSpan.textContent = elapsed;
-      // 計算評價
       const percentage = score * 5;
       const level = levels.find(l => percentage >= l.min && percentage <= l.max);
       ratingText.textContent = `${level.animal} 等級 (${percentage} 分)`;
@@ -159,7 +212,7 @@
       });
     }
 
-    document.getElementById('saveRecord').addEventListener('click', saveRecord);
+    document.getElementById('saveRecord').addListener('click', saveRecord);
     document.getElementById('restart').addEventListener('click', startQuiz);
     window.onload = startQuiz;
   </script>
