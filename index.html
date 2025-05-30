@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>不規則動詞三態練習</title>
+  <title> 蔣蔣四小小 不規則動詞三態練習</title>
   <style>
     body { font-family: Arial, sans-serif; background-color: #f0f8ff; padding: 20px; }
     h1, h2 { text-align: center; color: #333; }
@@ -11,10 +11,10 @@
     .verb-row { margin-bottom: 15px; }
     .verb-row label { display: block; margin-bottom: 5px; }
     .verb-row input { width: calc(50% - 10px); padding: 8px; margin-right: 5px; border: 1px solid #ccc; border-radius: 4px; }
-    button { display: inline-block; padding: 10px 20px; background: #007acc; color: #fff; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+    button { display: inline-block; padding: 10px 20px; background: #007acc; color: #fff; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 10px; }
     #result { text-align: center; margin-top: 15px; font-weight: bold; }
     #timer, #scoreDisplay { font-size: 18px; margin-bottom: 10px; }
-    table { width: 100%; border-collapse: collapse; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background: #007acc; color: #fff; }
   </style>
@@ -39,24 +39,38 @@
     <h2>完成！</h2>
     <div>你的成績: <span id="finalScore"></span> / 20</div>
     <div>花費時間: <span id="finalTime"></span> 秒</div>
+    <div>評價: <span id="ratingText"></span></div>
     <div>
       <label>請輸入姓名: <input type="text" id="userName" placeholder="Your name"></label>
       <button id="saveRecord">儲存記錄</button>
     </div>
     <h2>排行榜 (Top 10)</h2>
     <table>
-      <thead><tr><th>名次</th><th>姓名</th><th>得分</th><th>時間(秒)</th></tr></thead>
+      <thead><tr><th>名次</th><th>姓名</th><th>得分</th><th>時間(秒)</th><th>評價</th></tr></thead>
       <tbody id="leaderboard"></tbody>
     </table>
     <button id="restart">重新開始</button>
   </div>
 
   <script>
-    const verbs = [ /* same verbs array as before */
+    const verbs = [
       { base: 'be', past: 'was/were', participle: 'been' },
-      /* ...省略其餘51筆... */
+      /* ... 其他動詞 ... */
       { base: 'write', past: 'wrote', participle: 'written' }
     ];
+    const levels = [
+      { min: 0, max: 10, animal: '蝸牛 Snail' },
+      { min: 11, max: 20, animal: '烏龜 Turtle' },
+      { min: 21, max: 30, animal: '兔子 Rabbit' },
+      { min: 31, max: 40, animal: '貓 Cat' },
+      { min: 41, max: 50, animal: '狗 Dog' },
+      { min: 51, max: 60, animal: '猴子 Monkey' },
+      { min: 61, max: 70, animal: '老虎 Tiger' },
+      { min: 71, max: 80, animal: '老鷹 Eagle' },
+      { min: 81, max: 89, animal: '巨龍 Dragon' },
+      { min: 90, max: 100, animal: '哥吉拉 Godzilla' }
+    ];
+
     let current, questionCount = 0, score = 0, startTime;
     const baseLabel = document.querySelector('#baseForm span');
     const pastInput = document.getElementById('pastSimple');
@@ -68,6 +82,7 @@
     const boardDiv = document.getElementById('resultBoard');
     const finalScoreSpan = document.getElementById('finalScore');
     const finalTimeSpan = document.getElementById('finalTime');
+    const ratingText = document.getElementById('ratingText');
     const leaderboardBody = document.getElementById('leaderboard');
 
     function startQuiz() {
@@ -114,13 +129,19 @@
       finalScoreSpan.textContent = score;
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       finalTimeSpan.textContent = elapsed;
+      // 計算評價
+      const percentage = score * 5;
+      const level = levels.find(l => percentage >= l.min && percentage <= l.max);
+      ratingText.textContent = `${level.animal} 等級 (${percentage} 分)`;
       loadLeaderboard();
     }
 
     function saveRecord() {
       const name = document.getElementById('userName').value.trim() || '匿名';
       const time = Math.floor((Date.now() - startTime) / 1000);
-      const record = { name, score, time };
+      const percentage = score * 5;
+      const level = levels.find(l => percentage >= l.min && percentage <= l.max).animal;
+      const record = { name, score, time, animal: level };
       const data = JSON.parse(localStorage.getItem('irregularVerbsRecords') || '[]');
       data.push(record);
       data.sort((a,b) => b.score - a.score || a.time - b.time);
@@ -133,7 +154,7 @@
       leaderboardBody.innerHTML = '';
       data.slice(0,10).forEach((r,i) => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${i+1}</td><td>${r.name}</td><td>${r.score}</td><td>${r.time}</td>`;
+        tr.innerHTML = `<td>${i+1}</td><td>${r.name}</td><td>${r.score}</td><td>${r.time}</td><td>${r.animal}</td>`;
         leaderboardBody.appendChild(tr);
       });
     }
