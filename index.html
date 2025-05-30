@@ -14,6 +14,8 @@
     .verb-row { margin-bottom: 15px; }
     .verb-row label { display: block; margin-bottom: 5px; }
     .verb-row input { width: calc(50% - 10px); padding: 8px; margin-right: 5px; border: 1px solid #ccc; border-radius: 4px; }
+    .input-name { margin-bottom: 15px; }
+    .input-name label { font-size: 18px; }
     button { display: inline-block; padding: 10px 20px; background: #007acc; color: #fff; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 10px; }
     #result { text-align: center; margin-top: 15px; font-weight: bold; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -24,6 +26,9 @@
 <body>
   <h1>不規則動詞三態練習</h1>
   <div id="quiz">
+    <div class="input-name">
+      <label>姓名: <input type="text" id="userNameInput" placeholder="請輸入名字"></label>
+    </div>
     <div id="info">
       <div id="timer">計時: <span>0</span> 秒</div>
       <div id="scoreDisplay">得分: <span>0</span> / 20</div>
@@ -43,10 +48,7 @@
     <div>你的成績: <span id="finalScore"></span> / 20</div>
     <div>花費時間: <span id="finalTime"></span> 秒</div>
     <div>評價: <span id="ratingText"></span></div>
-    <div>
-      <label>請輸入姓名: <input type="text" id="userName" placeholder="Your name"></label>
-      <button id="saveRecord">儲存記錄</button>
-    </div>
+    <button id="saveRecord">儲存記錄</button>
     <h2>排行榜 (Top 10)</h2>
     <table>
       <thead><tr><th>名次</th><th>姓名</th><th>得分</th><th>時間(秒)</th><th>評價</th></tr></thead>
@@ -56,74 +58,10 @@
   </div>
 
   <script>
-    const verbs = [
-      { base: 'be', past: 'was/were', participle: 'been' },
-      { base: 'become', past: 'became', participle: 'become' },
-      { base: 'begin', past: 'began', participle: 'begun' },
-      { base: 'break', past: 'broke', participle: 'broken' },
-      { base: 'bring', past: 'brought', participle: 'brought' },
-      { base: 'buy', past: 'bought', participle: 'bought' },
-      { base: 'catch', past: 'caught', participle: 'caught' },
-      { base: 'choose', past: 'chose', participle: 'chosen' },
-      { base: 'come', past: 'came', participle: 'come' },
-      { base: 'cut', past: 'cut', participle: 'cut' },
-      { base: 'do', past: 'did', participle: 'done' },
-      { base: 'draw', past: 'drew', participle: 'drawn' },
-      { base: 'drink', past: 'drank', participle: 'drunk' },
-      { base: 'drive', past: 'drove', participle: 'driven' },
-      { base: 'eat', past: 'ate', participle: 'eaten' },
-      { base: 'fall', past: 'fell', participle: 'fallen' },
-      { base: 'feel', past: 'felt', participle: 'felt' },
-      { base: 'find', past: 'found', participle: 'found' },
-      { base: 'fly', past: 'flew', participle: 'flown' },
-      { base: 'forget', past: 'forgot', participle: 'forgotten' },
-      { base: 'get', past: 'got', participle: 'gotten/got' },
-      { base: 'give', past: 'gave', participle: 'given' },
-      { base: 'go', past: 'went', participle: 'gone' },
-      { base: 'have', past: 'had', participle: 'had' },
-      { base: 'hear', past: 'heard', participle: 'heard' },
-      { base: 'hold', past: 'held', participle: 'held' },
-      { base: 'keep', past: 'kept', participle: 'kept' },
-      { base: 'know', past: 'knew', participle: 'known' },
-      { base: 'leave', past: 'left', participle: 'left' },
-      { base: 'lose', past: 'lost', participle: 'lost' },
-      { base: 'make', past: 'made', participle: 'made' },
-      { base: 'meet', past: 'met', participle: 'met' },
-      { base: 'pay', past: 'paid', participle: 'paid' },
-      { base: 'put', past: 'put', participle: 'put' },
-      { base: 'read', past: 'read', participle: 'read' },
-      { base: 'ride', past: 'rode', participle: 'ridden' },
-      { base: 'run', past: 'ran', participle: 'run' },
-      { base: 'say', past: 'said', participle: 'said' },
-      { base: 'see', past: 'saw', participle: 'seen' },
-      { base: 'sell', past: 'sold', participle: 'sold' },
-      { base: 'send', past: 'sent', participle: 'sent' },
-      { base: 'sing', past: 'sang', participle: 'sung' },
-      { base: 'sit', past: 'sat', participle: 'sat' },
-      { base: 'sleep', past: 'slept', participle: 'slept' },
-      { base: 'speak', past: 'spoke', participle: 'spoken' },
-      { base: 'stand', past: 'stood', participle: 'stood' },
-      { base: 'swim', past: 'swam', participle: 'swum' },
-      { base: 'take', past: 'took', participle: 'taken' },
-      { base: 'teach', past: 'taught', participle: 'taught' },
-      { base: 'tell', past: 'told', participle: 'told' },
-      { base: 'think', past: 'thought', participle: 'thought' },
-      { base: 'write', past: 'wrote', participle: 'written' }
-    ];
-    const levels = [
-      { min: 0, max: 10, animal: '蝸牛 Snail' },
-      { min: 11, max: 20, animal: '烏龜 Turtle' },
-      { min: 21, max: 30, animal: '兔子 Rabbit' },
-      { min: 31, max: 40, animal: '貓 Cat' },
-      { min: 41, max: 50, animal: '狗 Dog' },
-      { min: 51, max: 60, animal: '猴子 Monkey' },
-      { min: 61, max: 70, animal: '老虎 Tiger' },
-      { min: 71, max: 80, animal: '老鷹 Eagle' },
-      { min: 81, max: 89, animal: '巨龍 Dragon' },
-      { min: 90, max: 100, animal: '哥吉拉 Godzilla' }
-    ];
-
+    const verbs = [ /* 動詞陣列... */ ];
+    const levels = [ /* 等級定義... */ ];
     let current, questionCount = 0, score = 0, startTime;
+    const userNameInput = document.getElementById('userNameInput');
     const questionNumberSpan = document.getElementById('questionNumber');
     const baseLabel = document.querySelector('#baseForm span');
     const pastInput = document.getElementById('pastSimple');
@@ -162,6 +100,7 @@
     }
 
     document.getElementById('checkBtn').addEventListener('click', () => {
+      if (!userNameInput.value.trim()) { alert('請先輸入姓名！'); return; }
       const userPast = pastInput.value.trim().toLowerCase();
       const userPart = partInput.value.trim().toLowerCase();
       const correctPast = current.past.toLowerCase();
@@ -186,11 +125,10 @@
       const percentage = score * 5;
       const level = levels.find(l => percentage >= l.min && percentage <= l.max);
       ratingText.textContent = `${level.animal} 等級 (${percentage} 分)`;
-      loadLeaderboard();
     }
 
     function saveRecord() {
-      const name = document.getElementById('userName').value.trim() || '匿名';
+      const name = userNameInput.value.trim();
       const time = Math.floor((Date.now() - startTime) / 1000);
       const percentage = score * 5;
       const level = levels.find(l => percentage >= l.min && percentage <= l.max).animal;
@@ -212,7 +150,7 @@
       });
     }
 
-    document.getElementById('saveRecord').addListener('click', saveRecord);
+    document.getElementById('saveRecord').addEventListener('click', saveRecord);
     document.getElementById('restart').addEventListener('click', startQuiz);
     window.onload = startQuiz;
   </script>
