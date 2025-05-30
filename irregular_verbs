@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>不規則動詞三態練習</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f0f8ff; padding: 20px; }
+    h1 { text-align: center; color: #333; }
+    #quiz { max-width: 400px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .verb-row { margin-bottom: 15px; }
+    .verb-row label { display: block; margin-bottom: 5px; }
+    .verb-row input { width: calc(50% - 10px); padding: 8px; margin-right: 5px; border: 1px solid #ccc; border-radius: 4px; }
+    button { display: block; width: 100%; padding: 10px; background: #007acc; color: #fff; border: none; border-radius: 4px; font-size: 16px; }
+    #result { text-align: center; margin-top: 15px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>不規則動詞三態練習</h1>
+  <div id="quiz">
+    <div class="verb-row">
+      <label id="baseForm">Base form: <span></span></label>
+      <input type="text" id="pastSimple" placeholder="Past Simple">
+      <input type="text" id="pastParticiple" placeholder="Past Participle">
+    </div>
+    <button id="checkBtn">檢查答案</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const verbs = [
+      { base: 'be', past: 'was/were', participle: 'been' },
+      { base: 'become', past: 'became', participle: 'become' },
+      { base: 'begin', past: 'began', participle: 'begun' },
+      { base: 'break', past: 'broke', participle: 'broken' },
+      { base: 'bring', past: 'brought', participle: 'brought' },
+      { base: 'buy', past: 'bought', participle: 'bought' },
+      { base: 'catch', past: 'caught', participle: 'caught' },
+      { base: 'choose', past: 'chose', participle: 'chosen' },
+      { base: 'come', past: 'came', participle: 'come' },
+      { base: 'cut', past: 'cut', participle: 'cut' },
+      { base: 'do', past: 'did', participle: 'done' },
+      { base: 'draw', past: 'drew', participle: 'drawn' },
+      { base: 'drink', past: 'drank', participle: 'drunk' },
+      { base: 'drive', past: 'drove', participle: 'driven' },
+      { base: 'eat', past: 'ate', participle: 'eaten' },
+      { base: 'fall', past: 'fell', participle: 'fallen' },
+      { base: 'feel', past: 'felt', participle: 'felt' },
+      { base: 'find', past: 'found', participle: 'found' },
+      { base: 'fly', past: 'flew', participle: 'flown' },
+      { base: 'forget', past: 'forgot', participle: 'forgotten' },
+      { base: 'get', past: 'got', participle: 'gotten/got' },
+      { base: 'give', past: 'gave', participle: 'given' },
+      { base: 'go', past: 'went', participle: 'gone' },
+      { base: 'have', past: 'had', participle: 'had' },
+      { base: 'hear', past: 'heard', participle: 'heard' },
+      { base: 'hold', past: 'held', participle: 'held' },
+      { base: 'keep', past: 'kept', participle: 'kept' },
+      { base: 'know', past: 'knew', participle: 'known' },
+      { base: 'leave', past: 'left', participle: 'left' },
+      { base: 'lose', past: 'lost', participle: 'lost' },
+      { base: 'make', past: 'made', participle: 'made' },
+      { base: 'meet', past: 'met', participle: 'met' },
+      { base: 'pay', past: 'paid', participle: 'paid' },
+      { base: 'put', past: 'put', participle: 'put' },
+      { base: 'read', past: 'read', participle: 'read' },
+      { base: 'ride', past: 'rode', participle: 'ridden' },
+      { base: 'run', past: 'ran', participle: 'run' },
+      { base: 'say', past: 'said', participle: 'said' },
+      { base: 'see', past: 'saw', participle: 'seen' },
+      { base: 'sell', past: 'sold', participle: 'sold' },
+      { base: 'send', past: 'sent', participle: 'sent' },
+      { base: 'sing', past: 'sang', participle: 'sung' },
+      { base: 'sit', past: 'sat', participle: 'sat' },
+      { base: 'sleep', past: 'slept', participle: 'slept' },
+      { base: 'speak', past: 'spoke', participle: 'spoken' },
+      { base: 'stand', past: 'stood', participle: 'stood' },
+      { base: 'swim', past: 'swam', participle: 'swum' },
+      { base: 'take', past: 'took', participle: 'taken' },
+      { base: 'teach', past: 'taught', participle: 'taught' },
+      { base: 'tell', past: 'told', participle: 'told' },
+      { base: 'think', past: 'thought', participle: 'thought' },
+      { base: 'write', past: 'wrote', participle: 'written' }
+    ];
+
+    let current;
+    const baseLabel = document.querySelector('#baseForm span');
+    const pastInput = document.getElementById('pastSimple');
+    const partInput = document.getElementById('pastParticiple');
+    const resultDiv = document.getElementById('result');
+
+    function newVerb() {
+      pastInput.value = '';
+      partInput.value = '';
+      resultDiv.textContent = '';
+      current = verbs[Math.floor(Math.random() * verbs.length)];
+      baseLabel.textContent = current.base;
+      pastInput.focus();
+    }
+
+    document.getElementById('checkBtn').addEventListener('click', () => {
+      const userPast = pastInput.value.trim().toLowerCase();
+      const userPart = partInput.value.trim().toLowerCase();
+      const correctPast = current.past.toLowerCase();
+      const correctPart = current.participle.toLowerCase();
+      if ((correctPast.includes(userPast) || userPast === current.past.toLowerCase()) &&
+          (correctPart.includes(userPart) || userPart === current.participle.toLowerCase())) {
+        resultDiv.textContent = '答對了！很棒👍';
+        resultDiv.style.color = 'green';
+      } else {
+        resultDiv.textContent = `錯誤，正確答案：${current.past} / ${current.participle}`;
+        resultDiv.style.color = 'red';
+      }
+      setTimeout(newVerb, 2000);
+    });
+
+    window.onload = newVerb;
+  </script>
+</body>
+</html>
