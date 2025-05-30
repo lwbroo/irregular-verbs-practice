@@ -1,158 +1,545 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> 蔣蔣不規則動詞三態練習</title>
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #f0f8ff; padding: 20px; }
-    h1, h2 { text-align: center; color: #333; }
-    #quiz, #resultBoard { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    #info { display: flex; justify-content: space-between; margin-bottom: 10px; }
-    #info div { font-size: 18px; }
-    #questionNum { font-size: 18px; margin-bottom: 10px; }
-    .verb-row { margin-bottom: 15px; }
-    .verb-row label { display: block; margin-bottom: 5px; }
-    .verb-row input { width: calc(50% - 10px); padding: 8px; margin-right: 5px; border: 1px solid #ccc; border-radius: 4px; }
-    .input-name { margin-bottom: 15px; }
-    .input-name label { font-size: 18px; }
-    button { display: inline-block; padding: 10px 20px; background: #007acc; color: #fff; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 10px; }
-    #result { text-align: center; margin-top: 15px; font-weight: bold; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background: #007acc; color: #fff; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蔣蔣六隻棒棒 不規則動詞三態練習</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .feedback-correct { background-color: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+        .feedback-partial { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .feedback-incorrect { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        button { padding: 0.75rem 1rem; }
+        input[type="text"] { padding: 0.75rem; }
+        .cat-image {
+            width: 100px; 
+            height: 100px;
+            object-fit: cover;
+            border-radius: 0.75rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 2px solid #fff;
+        }
+        #loading-cat-spinner, #loading-leaderboard-spinner {
+            display: none; width: 40px; height: 40px;
+            border: 4px solid #f3f3f3; border-top: 4px solid #6366f1;
+            border-radius: 50%; animation: spin 1s linear infinite; margin: 15px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .game-stats { display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 1.1rem; font-weight: 600; }
+        .leaderboard-table { width: 100%; margin-top: 1rem; border-collapse: collapse; }
+        .leaderboard-table th, .leaderboard-table td { border: 1px solid #e5e7eb; padding: 0.5rem; text-align: left; }
+        .leaderboard-table th { background-color: #f3f4f6; }
+        #game-over-section, #username-section { display: none; } /* Hidden by default */
+    </style>
 </head>
-<body>
-  <h1>蔣講不規則動詞三態練習</h1>
-  <div id="quiz">
-    <div class="input-name">
-      <label>姓名: <input type="text" id="userNameInput" placeholder="請輸入名字"></label>
+<body class="bg-gradient-to-br from-blue-200 via-indigo-200 to-purple-200 flex flex-col items-center justify-center min-h-screen p-4 selection:bg-yellow-300 selection:text-yellow-900">
+
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-2xl text-center transform transition-all duration-500">
+        <header class="mb-4">
+            <h1 class="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+                蔣蔣六隻棒棒 不規則動詞三態練習
+            </h1>
+            <div id="cat-image-container" class="flex justify-center items-center h-[120px]">
+                 <div id="loading-cat-spinner"></div>
+                 <img src="" alt="可愛的 AI 生成布偶貓圖案" id="ragdoll-cat-image" class="cat-image mx-auto hidden" onerror="this.onerror=null; this.src='https://placehold.co/100x100/E0E7FF/4F46E5?text=圖片載入失敗'; this.classList.remove('hidden'); if(document.getElementById('loading-cat-spinner')) document.getElementById('loading-cat-spinner').style.display = 'none';">
+            </div>
+        </header>
+
+        <main id="game-section">
+            <div class="game-stats text-gray-700">
+                <div>題目：<span id="question-counter" class="text-indigo-600">0 / 20</span></div>
+                <div>時間：<span id="timer" class="text-indigo-600">00:00</span></div>
+            </div>
+            <div id="verb-container" class="mb-6 p-4 bg-indigo-50 rounded-lg shadow">
+                <p class="text-lg sm:text-xl font-semibold text-gray-700">原形動詞 (Base Form):</p>
+                <p id="base-verb" class="text-3xl sm:text-4xl font-bold text-indigo-600 mt-1"></p>
+                <p id="verb-meaning" class="text-md sm:text-lg text-gray-500 mt-1"></p>
+            </div>
+
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label for="past-simple" class="block text-md sm:text-lg font-medium text-gray-700 mb-1 text-left">過去式 (Past Simple):</label>
+                    <input type="text" id="past-simple" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg" placeholder="請輸入過去式">
+                </div>
+                <div>
+                    <label for="past-participle" class="block text-md sm:text-lg font-medium text-gray-700 mb-1 text-left">過去分詞 (Past Participle):</label>
+                    <input type="text" id="past-participle" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg" placeholder="請輸入過去分詞">
+                </div>
+            </div>
+
+            <div id="feedback-message" class="mb-6 p-3 rounded-lg text-md sm:text-lg font-medium min-h-[4em] flex items-center justify-center"></div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <button id="check-button" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg shadow-md">檢查答案</button>
+                <button id="next-button" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg shadow-md" disabled>下一個動詞</button>
+            </div>
+
+            <footer class="text-xl font-semibold text-gray-700">
+                分數：<span id="score" class="text-indigo-600 font-bold">0</span>
+            </footer>
+        </main>
+
+        <section id="game-over-section" class="mt-8 text-center">
+            <h2 class="text-2xl font-bold text-indigo-700 mb-2">遊戲結束！</h2>
+            <p class="text-lg text-gray-700">您的分數：<span id="final-score" class="font-bold">0</span></p>
+            <p class="text-lg text-gray-700">總時間：<span id="final-time" class="font-bold">00:00</span></p>
+            
+            <div id="username-section" class="mt-4">
+                <label for="username" class="block text-md font-medium text-gray-700 mb-1">輸入您的名字登上排行榜：</label>
+                <input type="text" id="username" class="w-full max-w-xs mx-auto p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="英雄榜留名">
+                <button id="save-score-button" class="mt-2 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg shadow-md">儲存分數</button>
+            </div>
+            <button id="restart-button" class="mt-6 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-lg shadow-md text-lg">重新開始</button>
+        </section>
+
+        <section id="leaderboard-section" class="mt-10 pt-6 border-t-2 border-indigo-200">
+            <h2 class="text-2xl sm:text-3xl font-bold text-indigo-700 mb-4">🏆 英雄排行榜 (Top 10) 🏆</h2>
+            <div id="loading-leaderboard-spinner"></div>
+            <table id="leaderboard-table" class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>玩家名稱</th>
+                        <th>分數</th>
+                        <th>時間</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    </tbody>
+            </table>
+             <p class="mt-2 text-sm text-gray-500">您的 User ID: <span id="user-id-display"></span> (用於識別排行榜上的您)</p>
+        </section>
     </div>
-    <div id="info">
-      <div id="timer">計時: <span>0</span> 秒</div>
-      <div id="scoreDisplay">得分: <span>0</span> / 20</div>
-      <div id="questionNum">題目: <span id="questionNumber">1</span>/20</div>
-    </div>
-    <div class="verb-row">
-      <label id="baseForm">Base form: <span></span></label>
-      <input type="text" id="pastSimple" placeholder="Past Simple">
-      <input type="text" id="pastParticiple" placeholder="Past Participle">
-    </div>
-    <button id="checkBtn">檢查答案</button>
-    <div id="result"></div>
-  </div>
 
-  <div id="resultBoard" style="display:none;">
-    <h2>完成！</h2>
-    <div>你的成績: <span id="finalScore"></span> / 20</div>
-    <div>花費時間: <span id="finalTime"></span> 秒</div>
-    <div>評價: <span id="ratingText"></span></div>
-    <button id="saveRecord">儲存記錄</button>
-    <h2>排行榜 (Top 10)</h2>
-    <table>
-      <thead><tr><th>名次</th><th>姓名</th><th>得分</th><th>時間(秒)</th><th>評價</th></tr></thead>
-      <tbody id="leaderboard"></tbody>
-    </table>
-    <button id="restart">重新開始</button>
-  </div>
+    <script type="module">
+        // Firebase v11.6.1
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-  <script>
-    const verbs = [ /* 動詞陣列... */ ];
-    const levels = [ /* 等級定義... */ ];
-    let current, questionCount = 0, score = 0, startTime;
-    const userNameInput = document.getElementById('userNameInput');
-    const questionNumberSpan = document.getElementById('questionNumber');
-    const baseLabel = document.querySelector('#baseForm span');
-    const pastInput = document.getElementById('pastSimple');
-    const partInput = document.getElementById('pastParticiple');
-    const resultDiv = document.getElementById('result');
-    const timerSpan = document.querySelector('#timer span');
-    const scoreDisplay = document.querySelector('#scoreDisplay span');
-    const quizDiv = document.getElementById('quiz');
-    const boardDiv = document.getElementById('resultBoard');
-    const finalScoreSpan = document.getElementById('finalScore');
-    const finalTimeSpan = document.getElementById('finalTime');
-    const ratingText = document.getElementById('ratingText');
-    const leaderboardBody = document.getElementById('leaderboard');
+        // --- DOM Elements ---
+        const baseVerbElement = document.getElementById('base-verb');
+        const verbMeaningElement = document.getElementById('verb-meaning');
+        const pastSimpleInput = document.getElementById('past-simple');
+        const pastParticipleInput = document.getElementById('past-participle');
+        const checkButton = document.getElementById('check-button');
+        const nextButton = document.getElementById('next-button');
+        const feedbackMessageElement = document.getElementById('feedback-message');
+        const scoreElement = document.getElementById('score');
+        const catImageElement = document.getElementById('ragdoll-cat-image');
+        const loadingCatSpinner = document.getElementById('loading-cat-spinner');
+        const loadingLeaderboardSpinner = document.getElementById('loading-leaderboard-spinner');
+        
+        const questionCounterElement = document.getElementById('question-counter');
+        const timerElement = document.getElementById('timer');
+        
+        const gameSection = document.getElementById('game-section');
+        const gameOverSection = document.getElementById('game-over-section');
+        const usernameSection = document.getElementById('username-section'); // Section containing username input
+        const finalScoreElement = document.getElementById('final-score');
+        const finalTimeElement = document.getElementById('final-time');
+        const usernameInput = document.getElementById('username'); // The username input field
+        const saveScoreButton = document.getElementById('save-score-button');
+        const restartButton = document.getElementById('restart-button');
+        
+        const leaderboardTableBody = document.getElementById('leaderboard-body');
+        const userIdDisplayElement = document.getElementById('user-id-display');
 
-    function startQuiz() {
-      questionCount = 0; score = 0;
-      scoreDisplay.textContent = score;
-      quizDiv.style.display = 'block'; boardDiv.style.display = 'none';
-      startTime = Date.now();
-      timerSpan.textContent = '0';
-      setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        timerSpan.textContent = elapsed;
-      }, 1000);
-      nextQuestion();
-    }
+        // --- Firebase Config & Initialization ---
+        let db, auth, userId;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id-irregular-verbs'; 
+        
+        const firebaseConfigFromEnv = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+        let firebaseConfig;
 
-    function nextQuestion() {
-      if (questionCount >= 20) return finishQuiz();
-      questionNumberSpan.textContent = questionCount + 1;
-      pastInput.value = ''; partInput.value = '';
-      resultDiv.textContent = '';
-      current = verbs[Math.floor(Math.random() * verbs.length)];
-      baseLabel.textContent = current.base;
-      pastInput.focus();
-    }
+        if (firebaseConfigFromEnv) {
+            try {
+                firebaseConfig = JSON.parse(firebaseConfigFromEnv);
+            } catch (e) {
+                console.error("Failed to parse firebaseConfigFromEnv:", e);
+                firebaseConfig = { apiKey: "AIza...", authDomain: "project.firebaseapp.com", projectId: "project-id" };
+            }
+        } else {
+            console.warn("Firebase config not provided, Firestore features may not work.");
+            firebaseConfig = { apiKey: "AIza...", authDomain: "project.firebaseapp.com", projectId: "project-id" };
+        }
 
-    document.getElementById('checkBtn').addEventListener('click', () => {
-      if (!userNameInput.value.trim()) { alert('請先輸入姓名！'); return; }
-      const userPast = pastInput.value.trim().toLowerCase();
-      const userPart = partInput.value.trim().toLowerCase();
-      const correctPast = current.past.toLowerCase();
-      const correctPart = current.participle.toLowerCase();
-      questionCount++;
-      if ((correctPast.includes(userPast)) && (correctPart.includes(userPart))) {
-        score++;
-        resultDiv.textContent = '答對了！'; resultDiv.style.color = 'green';
-      } else {
-        resultDiv.textContent = `錯誤，答案：${current.past} / ${current.participle}`;
-        resultDiv.style.color = 'red';
-      }
-      scoreDisplay.textContent = score;
-      setTimeout(nextQuestion, 1000);
-    });
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            setLogLevel('debug'); 
 
-    function finishQuiz() {
-      quizDiv.style.display = 'none'; boardDiv.style.display = 'block';
-      finalScoreSpan.textContent = score;
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      finalTimeSpan.textContent = elapsed;
-      const percentage = score * 5;
-      const level = levels.find(l => percentage >= l.min && percentage <= l.max);
-      ratingText.textContent = `${level.animal} 等級 (${percentage} 分)`;
-    }
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    console.log("User is signed in with UID:", userId);
+                    if (userIdDisplayElement) userIdDisplayElement.textContent = userId;
+                    await loadLeaderboard(); 
+                } else {
+                    console.log("User is signed out or auth state not yet determined.");
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                             console.log("Signed in with custom token.");
+                        } else {
+                            await signInAnonymously(auth);
+                            console.log("Signed in anonymously.");
+                        }
+                    } catch (error) {
+                        console.error("Error during sign-in:", error);
+                        userId = `anon-${crypto.randomUUID()}`; 
+                        if (userIdDisplayElement) userIdDisplayElement.textContent = userId + " (offline)";
+                        await loadLeaderboard(); 
+                    }
+                }
+            });
 
-    function saveRecord() {
-      const name = userNameInput.value.trim();
-      const time = Math.floor((Date.now() - startTime) / 1000);
-      const percentage = score * 5;
-      const level = levels.find(l => percentage >= l.min && percentage <= l.max).animal;
-      const record = { name, score, time, animal: level };
-      const data = JSON.parse(localStorage.getItem('irregularVerbsRecords') || '[]');
-      data.push(record);
-      data.sort((a,b) => b.score - a.score || a.time - b.time);
-      localStorage.setItem('irregularVerbsRecords', JSON.stringify(data));
-      loadLeaderboard();
-    }
+        } catch (e) {
+            console.error("Firebase initialization error:", e);
+            if (loadingLeaderboardSpinner) loadingLeaderboardSpinner.style.display = 'none';
+            if (leaderboardTableBody) leaderboardTableBody.innerHTML = '<tr><td colspan="4">排行榜載入失敗 (Firebase 初始化錯誤)</td></tr>';
+        }
 
-    function loadLeaderboard() {
-      const data = JSON.parse(localStorage.getItem('irregularVerbsRecords') || '[]');
-      leaderboardBody.innerHTML = '';
-      data.slice(0,10).forEach((r,i) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${i+1}</td><td>${r.name}</td><td>${r.score}</td><td>${r.time}</td><td>${r.animal}</td>`;
-        leaderboardBody.appendChild(tr);
-      });
-    }
 
-    document.getElementById('saveRecord').addEventListener('click', saveRecord);
-    document.getElementById('restart').addEventListener('click', startQuiz);
-    window.onload = startQuiz;
-  </script>
+        // --- Verb List ---
+        const verbs = [
+            { base: "be", past: ["was", "were"], participle: "been", chinese: "是" }, { base: "begin", past: "began", participle: "begun", chinese: "開始" },
+            { base: "break", past: "broke", participle: "broken", chinese: "打破" }, { base: "bring", past: "brought", participle: "brought", chinese: "帶來" },
+            { base: "buy", past: "bought", participle: "bought", chinese: "買" }, { base: "come", past: "came", participle: "come", chinese: "來" },
+            { base: "do", past: "did", participle: "done", chinese: "做" }, { base: "drink", past: "drank", participle: "drunk", chinese: "喝" },
+            { base: "drive", past: "drove", participle: "driven", chinese: "開車" }, { base: "eat", past: "ate", participle: "eaten", chinese: "吃" },
+            { base: "find", past: "found", participle: "found", chinese: "找到" }, { base: "fly", past: "flew", participle: "flown", chinese: "飛" },
+            { base: "get", past: "got", participle: ["got", "gotten"], chinese: "得到" }, { base: "give", past: "gave", participle: "given", chinese: "給" },
+            { base: "go", past: "went", participle: "gone", chinese: "去" }, { base: "have", past: "had", participle: "had", chinese: "有" },
+            { base: "know", past: "knew", participle: "known", chinese: "知道" }, { base: "make", past: "made", participle: "made", chinese: "製造" },
+            { base: "read", past: "read", participle: "read", chinese: "閱讀" }, { base: "run", past: "ran", participle: "run", chinese: "跑" },
+            { base: "say", past: "said", participle: "said", chinese: "說" }, { base: "see", past: "saw", participle: "seen", chinese: "看見" },
+            { base: "sing", past: "sang", participle: "sung", chinese: "唱歌" }, { base: "sit", past: "sat", participle: "sat", chinese: "坐" },
+            { base: "sleep", past: "slept", participle: "slept", chinese: "睡覺" }, { base: "speak", past: "spoke", participle: "spoken", chinese: "說話" },
+            { base: "swim", past: "swam", participle: "swum", chinese: "游泳" }, { base: "take", past: "took", participle: "taken", chinese: "拿" },
+            { base: "tell", past: "told", participle: "told", chinese: "告訴" }, { base: "think", past: "thought", participle: "thought", chinese: "想" },
+            { base: "write", past: "wrote", participle: "written", chinese: "寫" }, { base: "wear", past: "wore", participle: "worn", chinese: "穿" },
+            { base: "win", past: "won", participle: "won", chinese: "贏" }, { base: "cut", past: "cut", participle: "cut", chinese: "切" },
+            { base: "put", past: "put", participle: "put", chinese: "放" }, { base: "build", past: "built", participle: "built", chinese: "建造" },
+            { base: "catch", past: "caught", participle: "caught", chinese: "抓住" }, { base: "choose", past: "chose", participle: "chosen", chinese: "選擇" },
+            { base: "cost", past: "cost", participle: "cost", chinese: "花費" }, { base: "draw", past: "drew", participle: "drawn", chinese: "畫" }
+        ];
+        let shuffledVerbs = [];
+
+        // --- Game State ---
+        let currentVerb = null;
+        let score = 0;
+        let questionNumber = 0;
+        const MAX_QUESTIONS = 20;
+        let timerInterval;
+        let secondsElapsed = 0;
+        let gameInProgress = false;
+
+        // --- Functions ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function formatTime(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            secondsElapsed = 0;
+            if(timerElement) timerElement.textContent = formatTime(secondsElapsed);
+            gameInProgress = true;
+            timerInterval = setInterval(() => {
+                if (!gameInProgress) { 
+                    clearInterval(timerInterval);
+                    return;
+                }
+                secondsElapsed++;
+                if(timerElement) timerElement.textContent = formatTime(secondsElapsed);
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            gameInProgress = false;
+        }
+        
+        function startGame() {
+            score = 0;
+            questionNumber = 0;
+            secondsElapsed = 0; 
+            shuffleArray(verbs);
+            shuffledVerbs = verbs.slice(0, MAX_QUESTIONS); 
+
+            if(scoreElement) scoreElement.textContent = score;
+            if(timerElement) timerElement.textContent = formatTime(secondsElapsed);
+            
+            if(gameSection) gameSection.style.display = 'block';
+            if(gameOverSection) gameOverSection.style.display = 'none';
+            if(usernameSection) usernameSection.style.display = 'none';
+            
+            loadNextVerb();
+            startTimer(); 
+        }
+
+        function loadNextVerb() {
+            if (questionNumber >= MAX_QUESTIONS) {
+                endGame();
+                return;
+            }
+            
+            currentVerb = shuffledVerbs[questionNumber];
+            questionNumber++;
+
+            if(baseVerbElement) baseVerbElement.textContent = currentVerb.base;
+            if(verbMeaningElement) verbMeaningElement.textContent = `(${currentVerb.chinese})`;
+            if(questionCounterElement) questionCounterElement.textContent = `${questionNumber} / ${MAX_QUESTIONS}`;
+            
+            if(pastSimpleInput) pastSimpleInput.value = '';
+            if(pastParticipleInput) pastParticipleInput.value = '';
+            if(feedbackMessageElement) {
+                feedbackMessageElement.innerHTML = '';
+                feedbackMessageElement.className = 'mb-6 p-3 rounded-lg text-md sm:text-lg font-medium min-h-[4em] flex items-center justify-center';
+            }
+            
+            if(checkButton) checkButton.disabled = false;
+            if(nextButton) nextButton.disabled = true;
+            if(pastSimpleInput) pastSimpleInput.focus();
+        }
+
+        function checkField(userInput, correctAnswer) {
+            const cleanedInput = userInput.toLowerCase().trim();
+            if (Array.isArray( correctAnswer )) {
+                return correctAnswer.map(ans => ans.toLowerCase().trim()).includes(cleanedInput);
+            }
+            return cleanedInput === correctAnswer.toLowerCase().trim();
+        }
+
+        function formatCorrectAnswer(answer) {
+            return Array.isArray(answer) ? answer.join(" / ") : answer;
+        }
+
+        function checkAnswer() {
+            if (!currentVerb) return;
+
+            const pastSimpleAnswer = pastSimpleInput.value;
+            const pastParticipleAnswer = pastParticipleInput.value;
+            const isPastSimpleCorrect = checkField(pastSimpleAnswer, currentVerb.past);
+            const isPastParticipleCorrect = checkField(pastParticipleAnswer, currentVerb.participle);
+
+            let feedbackHTML = '';
+            let feedbackClass = '';
+
+            if (isPastSimpleCorrect && isPastParticipleCorrect) {
+                score++;
+                feedbackHTML = '太棒了！<span class="font-bold">完全正確！</span> �';
+                feedbackClass = 'feedback-correct';
+            } else if (isPastSimpleCorrect && !isPastParticipleCorrect) {
+                feedbackHTML = `過去式正確！👍 但過去分詞是：<strong class="font-semibold">${formatCorrectAnswer(currentVerb.participle)}</strong>。`;
+                feedbackClass = 'feedback-partial';
+            } else if (!isPastSimpleCorrect && isPastParticipleCorrect) {
+                feedbackHTML = `過去分詞正確！👍 但過去式是：<strong class="font-semibold">${formatCorrectAnswer(currentVerb.past)}</strong>。`;
+                feedbackClass = 'feedback-partial';
+            } else {
+                feedbackHTML = `再接再厲！💪 正確答案是：過去式 <strong class="font-semibold">${formatCorrectAnswer(currentVerb.past)}</strong>，過去分詞 <strong class="font-semibold">${formatCorrectAnswer(currentVerb.participle)}</strong>。`;
+                feedbackClass = 'feedback-incorrect';
+            }
+
+            if(feedbackMessageElement) {
+                feedbackMessageElement.innerHTML = feedbackHTML;
+                feedbackMessageElement.className += ' ' + feedbackClass;
+            }
+            if(scoreElement) scoreElement.textContent = score;
+            if(checkButton) checkButton.disabled = true;
+            if(nextButton) nextButton.disabled = false;
+            if(nextButton) nextButton.focus();
+        }
+
+        function endGame() {
+            stopTimer();
+            gameInProgress = false; // Make sure gameInProgress is set to false
+            if(gameSection) gameSection.style.display = 'none';
+            if(gameOverSection) gameOverSection.style.display = 'block';
+            if(usernameSection) usernameSection.style.display = 'block'; // This shows the username input section
+            if(finalScoreElement) finalScoreElement.textContent = score;
+            if(finalTimeElement) finalTimeElement.textContent = formatTime(secondsElapsed);
+            if(usernameInput) usernameInput.focus();
+        }
+
+        async function saveScoreToLeaderboard() {
+            const usernameVal = usernameInput.value.trim() || "匿名玩家"; // Use usernameVal to avoid conflict
+            if (!db || !userId) {
+                console.error("Firestore not initialized or user not authenticated. Cannot save score.");
+                alert("錯誤：無法儲存分數，資料庫未連接或使用者未驗證。");
+                return;
+            }
+
+            if(saveScoreButton) {
+                saveScoreButton.disabled = true;
+                saveScoreButton.textContent = "儲存中...";
+            }
+
+            const leaderboardColPath = `/artifacts/${appId}/public/data/leaderboard_irregular_verbs`;
+            
+            try {
+                await addDoc(collection(db, leaderboardColPath), {
+                    username: usernameVal, // Use usernameVal
+                    score: score,
+                    timeInSeconds: secondsElapsed,
+                    timestamp: serverTimestamp(),
+                    userId: userId 
+                });
+                console.log("Score saved for user:", usernameVal); // Use usernameVal
+                if(usernameInput) usernameInput.value = ''; 
+                if(usernameSection) usernameSection.style.display = 'none'; 
+                await loadLeaderboard(); 
+            } catch (error) {
+                console.error("Error saving score to Firestore: ", error);
+                alert("儲存分數失敗：" + error.message);
+            } finally {
+                if(saveScoreButton) {
+                    saveScoreButton.disabled = false;
+                    saveScoreButton.textContent = "儲存分數";
+                }
+            }
+        }
+        
+        async function loadLeaderboard() {
+            if (!db) {
+                console.warn("Firestore (db) is not initialized. Skipping leaderboard load.");
+                if(leaderboardTableBody) leaderboardTableBody.innerHTML = '<tr><td colspan="4">排行榜功能暫時無法使用 (DB 未連接)</td></tr>';
+                if(loadingLeaderboardSpinner) loadingLeaderboardSpinner.style.display = 'none';
+                return;
+            }
+            if (!auth.currentUser && !(typeof __initial_auth_token !== 'undefined' && __initial_auth_token)) {
+                console.log("Waiting for user authentication to load leaderboard...");
+                if(loadingLeaderboardSpinner) loadingLeaderboardSpinner.style.display = 'block';
+                return;
+            }
+
+            if(loadingLeaderboardSpinner) loadingLeaderboardSpinner.style.display = 'block';
+            if(leaderboardTableBody) leaderboardTableBody.innerHTML = ''; 
+
+            const leaderboardColPath = `/artifacts/${appId}/public/data/leaderboard_irregular_verbs`;
+
+            try {
+                // **FIXED QUERY:** Only order by score in Firestore, fetch more to sort by time client-side
+                const q = query(collection(db, leaderboardColPath), orderBy("score", "desc"), limit(30)); 
+                const querySnapshot = await getDocs(q);
+                
+                let leaderboardData = [];
+                querySnapshot.forEach((doc) => {
+                    leaderboardData.push(doc.data());
+                });
+
+                // Client-side sorting: primary by score (desc), secondary by timeInSeconds (asc)
+                leaderboardData.sort((a, b) => {
+                    if (b.score === a.score) {
+                        return a.timeInSeconds - b.timeInSeconds; // Ascending time for ties
+                    }
+                    return b.score - a.score; // Descending score
+                });
+
+                const top10Data = leaderboardData.slice(0, 10); // Get the actual top 10 after full sorting
+
+                if (top10Data.length === 0) {
+                    if(leaderboardTableBody) leaderboardTableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4">英雄榜尚無紀錄，快來挑戰成為第一人！</td></tr>';
+                } else {
+                    let rank = 1;
+                    top10Data.forEach((data) => {
+                        if(leaderboardTableBody) {
+                            const row = leaderboardTableBody.insertRow();
+                            row.insertCell().textContent = rank++;
+                            row.insertCell().textContent = data.username;
+                            row.insertCell().textContent = data.score;
+                            row.insertCell().textContent = formatTime(data.timeInSeconds);
+                            if (data.userId === userId) { 
+                                row.classList.add('bg-indigo-100', 'font-semibold');
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Error loading leaderboard: ", error);
+                if(leaderboardTableBody) leaderboardTableBody.innerHTML = `<tr><td colspan="4">載入排行榜時發生錯誤。請檢查 Firestore 控制台的索引設定或錯誤訊息。</td></tr>`;
+            } finally {
+                if(loadingLeaderboardSpinner) loadingLeaderboardSpinner.style.display = 'none';
+            }
+        }
+
+        async function generateAndSetCatImage() {
+            if (loadingCatSpinner) loadingCatSpinner.style.display = 'block';
+            if (catImageElement) catImageElement.classList.add('hidden');
+            const prompt = "A very cute and fluffy Ragdoll cat with striking blue eyes, sitting playfully, looking directly at the camera. Simple light-colored background. Stylized illustration suitable for a children's website. Clear and appealing.";
+            // API key for image generation should be handled securely by the environment.
+            // For demonstration, if __image_gen_api_key is available, use it. Otherwise, fallback or skip.
+            const genApiKey = typeof __image_gen_api_key !== 'undefined' ? __image_gen_api_key : ""; 
+            
+            if (!genApiKey) { // If no API key for image generation, use placeholder
+                console.warn("Image generation API key not provided. Using placeholder.");
+                if(catImageElement) {
+                    catImageElement.src = 'https://placehold.co/100x100/E0E7FF/4F46E5?text=可愛貓咪';
+                    catImageElement.alt = "可愛貓咪佔位符";
+                    catImageElement.classList.remove('hidden');
+                }
+                if (loadingCatSpinner) loadingCatSpinner.style.display = 'none';
+                return;
+            }
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${genApiKey}`;
+            const payload = { instances: [{ prompt: prompt }], parameters: { "sampleCount": 1 } };
+
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) { // Check for HTTP errors
+                    throw new Error(`Image generation API request failed with status ${response.status}`);
+                }
+                const result = await response.json();
+                if (result.predictions && result.predictions[0]?.bytesBase64Encoded) {
+                    if(catImageElement) catImageElement.src = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                } else { throw new Error('No image data in response or unexpected response structure'); }
+            } catch (error) {
+                console.error('Error fetching cat image:', error);
+                if(catImageElement) {
+                    catImageElement.src = 'https://placehold.co/100x100/E0E7FF/4F46E5?text=貓咪載入失敗'; 
+                    catImageElement.alt = "貓咪圖片載入失敗";
+                }
+            } finally {
+                if (loadingCatSpinner) loadingCatSpinner.style.display = 'none';
+                if (catImageElement) catImageElement.classList.remove('hidden');
+            }
+        }
+
+        // --- Event Listeners ---
+        if(checkButton) checkButton.addEventListener('click', checkAnswer);
+        if(nextButton) nextButton.addEventListener('click', loadNextVerb);
+        if(restartButton) restartButton.addEventListener('click', startGame);
+        if(saveScoreButton) saveScoreButton.addEventListener('click', saveScoreToLeaderboard);
+
+        if(pastSimpleInput) pastSimpleInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); if(pastParticipleInput) pastParticipleInput.focus(); } });
+        if(pastParticipleInput) pastParticipleInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (checkButton && !checkButton.disabled) checkButton.click();
+                else if (nextButton && !nextButton.disabled) nextButton.click();
+            }
+        });
+        
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            startGame();
+            generateAndSetCatImage();
+            // Firebase auth state change will trigger initial leaderboard load.
+        });
+    </script>
 </body>
 </html>
+�
